@@ -32,66 +32,82 @@ impl GildedRose {
         GildedRose { items }
     }
 
+    // method to update quality of brie items
     fn update_quality_brie(item: &mut Item) {
+        // increase quality by 1 as sellin date approaches
         if item.sell_in > 0 {
-            item.quality = std::cmp::min(item.quality + 1, 50);
+            item.quality = std::cmp::min(item.quality + 1, 50); // using std min function to ensure max quality is 50
         };
 
+        // increase quality by 2 after sellin date has arrived
         if item.sell_in <= 0 {
-            item.quality = std::cmp::min(item.quality + 2, 50);
+            item.quality = std::cmp::min(item.quality + 2, 50); // using std min function to ensure max quality is 50
         }
 
         item.sell_in -= 1;
     }
 
+    // method to update quality of ticket items
     fn update_quality_ticket(item: &mut Item) {
+        // set to quality to 0 if sellin date has arrived
         if item.sell_in <= 0 {
             item.quality = 0;
             item.sell_in -= 1;
             return;
         };
 
+        // increase value by 3 with less than 3 days to sell
         if item.sell_in <= 5 {
             item.quality = std::cmp::min(item.quality + 3, 50);
             item.sell_in -= 1;
             return;
         }
 
+        // increase value by 2 with less than 10 days to sell
         if item.sell_in <= 10 {
             item.quality = std::cmp::min(item.quality + 2, 50);
             item.sell_in -= 1;
             return;
         }
 
+        // the default: increase quality by 1
         item.quality += 1;
         item.sell_in -= 1;
     }
 
+    // method to update quality of standard items
     fn update_quality_standard(item: &mut Item) {
+        // degrade by 2 when sellin date has arrived
         if item.sell_in <= 0 {
-            item.quality = std::cmp::max(item.quality - 2, 0);
+            item.quality = std::cmp::max(item.quality - 2, 0); // using std max function to ensure min quality is 0
             item.sell_in -= 1;
             return;
         }
 
-        item.quality = std::cmp::max(item.quality - 1, 0);
+        // degrade by 1 when past sellin date
+        item.quality = std::cmp::max(item.quality - 1, 0); // using std max function to ensure min quality is 0
         item.sell_in -= 1;
     }
 
+    // method to update quality of conjured items
     fn update_quality_conjured(item: &mut Item) {
+        // degrade by 4 when sellin date has arrived
         if item.sell_in <= 0 {
-            item.quality = std::cmp::max(item.quality - 4, 0);
+            item.quality = std::cmp::max(item.quality - 4, 0); // using std max function to ensure min quality is 0
             item.sell_in -= 1;
             return;
         }
-
-        item.quality = std::cmp::max(item.quality - 2, 0);
+        // degrade by 2 before sellin date
+        item.quality = std::cmp::max(item.quality - 2, 0); // using std max function to ensure min quality is 0
         item.sell_in -= 1;
     }
 
+    // method to update quality of items available at the gilded rose
     pub fn update_quality(&mut self) {
         println!("updating quality");
         for item in &mut self.items {
+            // each arm selects item for update depedent on name and uses handler for that type
+            // (really wanted to use a match here but had trouble dereferencing from &item)
             if item.name == "Sulfuras, Hand of Ragnaros" {
                 return;
             } else if item.name == "Aged Brie" {
@@ -116,7 +132,7 @@ mod tests {
     use super::{GildedRose, Item};
 
     #[test]
-    pub fn test_all() {
+    pub fn test_items() {
         let tests = vec![
             // tests are of tuple type (name, sellin, quality, expected sellin, expected quality, no. days to update)
             ("Sulfuras, Hand of Ragnaros", 5, 80, 5, 80, 5),
@@ -156,12 +172,6 @@ mod tests {
             let items = vec![Item::new(test.0, test.1, test.2)];
 
             let mut rose = GildedRose::new(items);
-
-            println!("Testing {}", test.0);
-            println!(
-                "Day {}: sellin: {} quality: {}",
-                0, rose.items[0].sell_in, rose.items[0].quality
-            );
 
             for i in 0..test.5 {
                 rose.update_quality();
