@@ -84,20 +84,16 @@ impl GildedRose {
         for item in &mut self.items {
             if item.name == "Sulfuras, Hand of Ragnaros" {
                 return;
-            }
-
-            if item.name == "Aged Brie" {
+            } else if item.name == "Aged Brie" {
                 GildedRose::update_quality_brie(item);
                 return;
-            }
-
-            if item.name == "Backstage passes to a TAFKAL80ETC concert" {
+            } else if item.name == "Backstage passes to a TAFKAL80ETC concert" {
                 GildedRose::update_quality_ticket(item);
                 return;
+            } else {
+                GildedRose::update_quality_standard(item);
+                return;
             }
-
-            GildedRose::update_quality_standard(item);
-            return;
         }
     }
 }
@@ -139,7 +135,7 @@ mod tests {
             ("Conjured Mana Cake", 0, 8, -1, 6, 1),
             ("Conjured Mana Cake", 3, 0, 2, 0, 1),
             ("Acme Dynamite", 3, 6, 2, 5, 1),
-            ("Acme Dynamite", 0, 6, -1, 4, 1),
+            ("Acme Dynamite", 0, 6, -3, 0, 3),
             ("Acme Dynamite", 0, 0, -1, 0, 1),
         ];
 
