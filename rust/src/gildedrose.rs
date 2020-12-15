@@ -74,8 +74,18 @@ impl GildedRose {
             return;
         }
 
-        // decrement by 1
         item.quality = std::cmp::max(item.quality - 1, 0);
+        item.sell_in -= 1;
+    }
+
+    fn update_quality_conjured(item: &mut Item) {
+        if item.sell_in <= 0 {
+            item.quality = std::cmp::max(item.quality - 4, 0);
+            item.sell_in -= 1;
+            return;
+        }
+
+        item.quality = std::cmp::max(item.quality - 2, 0);
         item.sell_in -= 1;
     }
 
@@ -89,6 +99,9 @@ impl GildedRose {
                 return;
             } else if item.name == "Backstage passes to a TAFKAL80ETC concert" {
                 GildedRose::update_quality_ticket(item);
+                return;
+            } else if item.name == "Conjured Mana Cake" {
+                GildedRose::update_quality_conjured(item);
                 return;
             } else {
                 GildedRose::update_quality_standard(item);
@@ -131,8 +144,8 @@ mod tests {
                 50,
                 9,
             ),
-            ("Conjured Mana Cake", 3, 6, 2, 5, 1),
-            ("Conjured Mana Cake", 0, 8, -1, 6, 1),
+            ("Conjured Mana Cake", 3, 6, 2, 4, 1),
+            ("Conjured Mana Cake", 0, 8, -1, 4, 1),
             ("Conjured Mana Cake", 3, 0, 2, 0, 1),
             ("Acme Dynamite", 3, 6, 2, 5, 1),
             ("Acme Dynamite", 0, 6, -3, 0, 3),
