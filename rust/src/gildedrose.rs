@@ -1,4 +1,6 @@
 use std::fmt::{self, Display};
+
+#[derive(Debug)]
 pub struct Item {
     pub name: String,
     pub sell_in: i32,
@@ -30,56 +32,72 @@ impl GildedRose {
         GildedRose { items }
     }
 
+    pub fn update_quality_brie(item: &mut Item) {
+        if item.sell_in > 0 {
+            item.quality = std::cmp::min(item.quality + 1, 50);
+        };
+
+        if item.sell_in <= 0 {
+            item.quality = std::cmp::min(item.quality + 2, 50);
+        }
+
+        item.sell_in -= 1;
+    }
+
+    pub fn update_quality_ticket(item: &mut Item) {
+        if item.sell_in <= 0 {
+            item.quality = 0;
+            item.sell_in -= 1;
+            return;
+        };
+
+        if item.sell_in <= 5 {
+            item.quality = std::cmp::min(item.quality + 3, 50);
+            item.sell_in -= 1;
+            return;
+        }
+
+        if item.sell_in <= 10 {
+            item.quality = std::cmp::min(item.quality + 2, 50);
+            item.sell_in -= 1;
+            return;
+        }
+
+        item.quality += 1;
+        item.sell_in -= 1;
+    }
+
+    pub fn update_quality_standard(item: &mut Item) {
+        if item.sell_in <= 0 {
+            item.quality = std::cmp::max(item.quality - 2, 0);
+            item.sell_in -= 1;
+            return;
+        }
+
+        // decrement by 1
+        item.quality = std::cmp::max(item.quality - 1, 0);
+        item.sell_in -= 1;
+    }
+
     pub fn update_quality(&mut self) {
+        println!("updating quality");
         for item in &mut self.items {
-            if item.name != "Aged Brie" && item.name != "Backstage passes to a TAFKAL80ETC concert"
-            {
-                if item.quality > 0 {
-                    if item.name != "Sulfuras, Hand of Ragnaros" {
-                        item.quality = item.quality - 1;
-                    }
-                }
-            } else {
-                if item.quality < 50 {
-                    item.quality = item.quality + 1;
-
-                    if item.name == "Backstage passes to a TAFKAL80ETC concert" {
-                        if item.sell_in < 11 {
-                            if item.quality < 50 {
-                                item.quality = item.quality + 1;
-                            }
-                        }
-
-                        if item.sell_in < 6 {
-                            if item.quality < 50 {
-                                item.quality = item.quality + 1;
-                            }
-                        }
-                    }
-                }
+            if item.name == "Sulfuras, Hand of Ragnaros" {
+                return;
             }
 
-            if item.name != "Sulfuras, Hand of Ragnaros" {
-                item.sell_in = item.sell_in - 1;
+            if item.name == "Aged Brie" {
+                GildedRose::update_quality_brie(item);
+                return;
             }
 
-            if item.sell_in < 0 {
-                if item.name != "Aged Brie" {
-                    if item.name != "Backstage passes to a TAFKAL80ETC concert" {
-                        if item.quality > 0 {
-                            if item.name != "Sulfuras, Hand of Ragnaros" {
-                                item.quality = item.quality - 1;
-                            }
-                        }
-                    } else {
-                        item.quality = item.quality - item.quality;
-                    }
-                } else {
-                    if item.quality < 50 {
-                        item.quality = item.quality + 1;
-                    }
-                }
+            if item.name == "Backstage passes to a TAFKAL80ETC concert" {
+                GildedRose::update_quality_ticket(item);
+                return;
             }
+
+            GildedRose::update_quality_standard(item);
+            return;
         }
     }
 }
@@ -89,11 +107,67 @@ mod tests {
     use super::{GildedRose, Item};
 
     #[test]
-    pub fn foo() {
-        let items = vec![Item::new("foo", 0, 0)];
-        let mut rose = GildedRose::new(items);
-        rose.update_quality();
+    pub fn test_all() {
+        let tests = vec![
+            // tests are of tuple type (name, sellin, quality, expected sellin, expected quality, no. days to update)
+            ("Sulfuras, Hand of Ragnaros", 5, 80, 5, 80, 5),
+            ("Sulfuras, Hand of Ragnaros", 3, 80, 3, 80, 4),
+            ("Aged Brie", 2, 0, -2, 6, 4),
+            ("Aged Brie", 5, 50, 4, 50, 1),
+            ("Aged Brie", 9, 5, 8, 6, 1),
+            ("Aged Brie", 0, 0, -1, 2, 1),
+            (
+                "Backstage passes to a TAFKAL80ETC concert",
+                15,
+                49,
+                14,
+                50,
+                1,
+            ),
+            ("Backstage passes to a TAFKAL80ETC concert", 0, 49, -1, 0, 1),
+            ("Backstage passes to a TAFKAL80ETC concert", 4, 4, 3, 7, 1),
+            ("Backstage passes to a TAFKAL80ETC concert", 9, 4, 8, 6, 1),
+            (
+                "Backstage passes to a TAFKAL80ETC concert",
+                10,
+                49,
+                1,
+                50,
+                9,
+            ),
+            ("Conjured Mana Cake", 3, 6, 2, 5, 1),
+            ("Conjured Mana Cake", 0, 8, -1, 6, 1),
+            ("Conjured Mana Cake", 3, 0, 2, 0, 1),
+            ("Acme Dynamite", 3, 6, 2, 5, 1),
+            ("Acme Dynamite", 0, 6, -1, 4, 1),
+            ("Acme Dynamite", 0, 0, -1, 0, 1),
+        ];
 
-        assert_eq!("fixme", rose.items[0].name);
+        for test in tests.iter() {
+            let items = vec![Item::new(test.0, test.1, test.2)];
+
+            let mut rose = GildedRose::new(items);
+
+            println!("Testing {}", test.0);
+            println!(
+                "Day {}: sellin: {} quality: {}",
+                0, rose.items[0].sell_in, rose.items[0].quality
+            );
+
+            for i in 0..test.5 {
+                rose.update_quality();
+                println!(
+                    "Day {}: sellin: {} quality: {}",
+                    i + 1,
+                    rose.items[0].sell_in,
+                    rose.items[0].quality
+                );
+            }
+
+            assert_eq!(
+                (test.3, test.4),
+                (rose.items[0].sell_in, rose.items[0].quality)
+            );
+        }
     }
 }
