@@ -32,7 +32,7 @@ impl GildedRose {
         GildedRose { items }
     }
 
-    pub fn update_quality_brie(item: &mut Item) {
+    fn update_quality_brie(item: &mut Item) {
         if item.sell_in > 0 {
             item.quality = std::cmp::min(item.quality + 1, 50);
         };
@@ -44,7 +44,7 @@ impl GildedRose {
         item.sell_in -= 1;
     }
 
-    pub fn update_quality_ticket(item: &mut Item) {
+    fn update_quality_ticket(item: &mut Item) {
         if item.sell_in <= 0 {
             item.quality = 0;
             item.sell_in -= 1;
@@ -67,7 +67,7 @@ impl GildedRose {
         item.sell_in -= 1;
     }
 
-    pub fn update_quality_standard(item: &mut Item) {
+    fn update_quality_standard(item: &mut Item) {
         if item.sell_in <= 0 {
             item.quality = std::cmp::max(item.quality - 2, 0);
             item.sell_in -= 1;
