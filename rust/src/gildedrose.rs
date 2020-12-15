@@ -1,6 +1,5 @@
 use std::fmt::{self, Display};
 
-#[derive(Debug)]
 pub struct Item {
     pub name: String,
     pub sell_in: i32,
@@ -135,6 +134,7 @@ mod tests {
     pub fn test_items() {
         let tests = vec![
             // tests are of tuple type (name, sellin, quality, expected sellin, expected quality, no. days to update)
+            // (i wanted to make a new struct for tests as its harder to keep track of the fields in the tuple but i struggled with the borrow checker)
             ("Sulfuras, Hand of Ragnaros", 5, 80, 5, 80, 5),
             ("Sulfuras, Hand of Ragnaros", 3, 80, 3, 80, 4),
             ("Aged Brie", 2, 0, -2, 6, 4),
@@ -169,20 +169,18 @@ mod tests {
         ];
 
         for test in tests.iter() {
+            // create an item vector from the test
             let items = vec![Item::new(test.0, test.1, test.2)];
 
+            // create a gilded rose using the item vector
             let mut rose = GildedRose::new(items);
 
-            for i in 0..test.5 {
+            // update the quality per number of days in the test
+            for _ in 0..test.5 {
                 rose.update_quality();
-                println!(
-                    "Day {}: sellin: {} quality: {}",
-                    i + 1,
-                    rose.items[0].sell_in,
-                    rose.items[0].quality
-                );
             }
 
+            // compare the expected quality and sellin with the test result
             assert_eq!(
                 (test.3, test.4),
                 (rose.items[0].sell_in, rose.items[0].quality)
